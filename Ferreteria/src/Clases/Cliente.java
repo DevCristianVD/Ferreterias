@@ -3,7 +3,7 @@ package Clases;
 public class Cliente {
     private int idCliente;
     private String nombre;
-    private String usuario;
+    private String usuario; // Ya lo tenías
     private String primerApellido;
     private String segundoApellido;
     private String domicilio;
@@ -12,11 +12,14 @@ public class Cliente {
     private String telefono;
     private String correo;
     private String contrasena;
-
-    // Constructor
+    private String Rfc;
+    
+    public Cliente() {
+    }
+    
     public Cliente(int idCliente, String nombre, String primerApellido, String segundoApellido, 
                    String domicilio, String numero, String cp, String telefono, 
-                   String correo, String contrasena) {
+                   String correo, String contrasena, String usuario) { // <-- Agregado al final
         this.idCliente = idCliente;
         this.nombre = nombre;
         this.primerApellido = primerApellido;
@@ -27,10 +30,12 @@ public class Cliente {
         this.telefono = telefono;
         this.correo = correo;
         this.contrasena = contrasena;
+        this.usuario = usuario; // <-- Agregado
     }
 
     
-    // Métodos Getters y Setters
+    // --- Métodos Getters y Setters ---
+    
     public int getIdCliente() {
         return idCliente;
     }
@@ -45,6 +50,16 @@ public class Cliente {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    // --- CAMBIO 3: Getters y Setters para 'usuario' ---
+    // (Faltaban estos métodos)
+    public String getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
     }
 
     public String getPrimerApellido() {
@@ -110,4 +125,14 @@ public class Cliente {
     public void setContrasena(String contrasena) {
         this.contrasena = contrasena;
     }
+
+    public String getRfc() {
+        return Rfc;
+    }
+
+    public void setRfc(String Rfc) {
+        this.Rfc = Rfc;
+    }
+    
+    
 }

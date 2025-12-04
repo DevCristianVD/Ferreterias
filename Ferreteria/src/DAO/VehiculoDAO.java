@@ -59,4 +59,40 @@ public class VehiculoDAO {
         }
         return 0; 
     }
+    
+    public Clases.Vehiculo obtenerVehiculoPorId(int id) throws Exception {
+        String sql = "SELECT * FROM vehiculo WHERE id_vehiculo = ?";
+        try (java.sql.Connection con = Clases.ConexionBD.getConexion();
+             java.sql.PreparedStatement pst = con.prepareStatement(sql)) {
+            
+            pst.setInt(1, id);
+            java.sql.ResultSet rs = pst.executeQuery();
+            
+            if (rs.next()) {
+                return new Clases.Vehiculo(
+                    rs.getInt("id_vehiculo"),
+                    rs.getString("modelo"),
+                    rs.getDouble("peso_soportado"),
+                    rs.getInt("id_empleado"),
+                    rs.getString("status")
+                );
+            }
+        }
+        return null;
+    }
+
+    public boolean actualizarVehiculo(Clases.Vehiculo v) throws Exception {
+        String sql = "UPDATE vehiculo SET modelo=?, peso_soportado=?, id_empleado=?, status=? WHERE id_vehiculo=?";
+        try (java.sql.Connection con = Clases.ConexionBD.getConexion();
+             java.sql.PreparedStatement pst = con.prepareStatement(sql)) {
+            
+            pst.setString(1, v.getModelo());
+            pst.setDouble(2, v.getPesoSoportado());
+            pst.setInt(3, v.getIdEmpleado());
+            pst.setString(4, v.getEstatus());
+            pst.setInt(5, v.getIdVehiculo());
+
+            return pst.executeUpdate() > 0;
+        }
+    }
 }

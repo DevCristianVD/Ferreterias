@@ -103,5 +103,77 @@ public class ProductoDAO {
     }
     return lista;
 }
+    
+    // --- AGREGA ESTOS MÉTODOS A TU ProductoDAO ---
+
+    public Clases.Producto obtenerProductoPorId(int id) throws Exception {
+        String sql = "SELECT * FROM inventario WHERE id_producto = ?";
+        try (java.sql.Connection con = Clases.ConexionBD.getConexion();
+             java.sql.PreparedStatement pst = con.prepareStatement(sql)) {
+            
+            pst.setInt(1, id);
+            java.sql.ResultSet rs = pst.executeQuery();
+            
+            if (rs.next()) {
+                return new Clases.Producto(
+                    rs.getInt("id_producto"),
+                    rs.getString("nombre"),
+                    rs.getInt("id_marca"),
+                    rs.getInt("id_categoria"),
+                    rs.getDouble("precio_compra"),
+                    rs.getDouble("precio_venta"),
+                    rs.getDouble("precio_merma"),
+                    rs.getInt("cantidad")
+                );
+            }
+        }
+        return null;
+    }
+
+    public boolean actualizarProducto(Clases.Producto p) throws Exception {
+        String sql = "UPDATE inventario SET nombre=?, id_marca=?, id_categoria=?, " +
+                     "precio_compra=?, precio_venta=?, precio_merma=?, cantidad=? " +
+                     "WHERE id_producto=?";
+                     
+        try (java.sql.Connection con = Clases.ConexionBD.getConexion();
+             java.sql.PreparedStatement pst = con.prepareStatement(sql)) {
+
+            pst.setString(1, p.getNombre());
+            pst.setInt(2, p.getIdMarca());
+            pst.setInt(3, p.getIdCategoria());
+            pst.setDouble(4, p.getPrecioCompra());
+            pst.setDouble(5, p.getPrecioVenta());
+            pst.setDouble(6, p.getPrecioMerma());
+            pst.setInt(7, p.getCantidad());
+            pst.setInt(8, p.getIdProducto()); // WHERE
+
+            return pst.executeUpdate() > 0;
+        }
+    }
+    
+    // Método para el filtro de búsqueda
+    public List<Clases.Producto> buscarProductosPorNombre(String texto) throws Exception {
+        String sql = "SELECT * FROM inventario WHERE nombre LIKE ?";
+        List<Clases.Producto> lista = new ArrayList<>();
+        try (java.sql.Connection con = Clases.ConexionBD.getConexion();
+             java.sql.PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1, "%" + texto + "%");
+            java.sql.ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                lista.add(new Clases.Producto(
+                    rs.getInt("id_producto"),
+                    rs.getString("nombre"),
+                    rs.getInt("id_marca"),
+                    rs.getInt("id_categoria"),
+                    rs.getDouble("precio_compra"),
+                    rs.getDouble("precio_venta"),
+                    rs.getDouble("precio_merma"),
+                    rs.getInt("cantidad")
+                ));
+            }
+        }
+        return lista;
+    }
+    
 }
 

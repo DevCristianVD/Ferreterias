@@ -65,4 +65,22 @@ public class ParentescoDAO {
         }
         return 0; 
     }
+    
+    public Clases.Parentesco obtenerParentescoPorId(int id) throws Exception {
+        String sql = "SELECT * FROM parentesco WHERE id_parentesco = ?";
+        try (java.sql.Connection con = Clases.ConexionBD.getConexion();
+             java.sql.PreparedStatement pst = con.prepareStatement(sql)) {
+            
+            pst.setInt(1, id);
+            java.sql.ResultSet rs = pst.executeQuery();
+            
+            if (rs.next()) {
+                return new Clases.Parentesco(
+                    rs.getInt("id_parentesco"),
+                    rs.getString("nombre")
+                );
+            }
+        }
+        return null;
+    }
 }

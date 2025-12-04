@@ -83,4 +83,22 @@ public class MarcaDAO {
         }
         return lista; 
     }
+     
+     public Clases.Marca obtenerMarcaPorId(int id) throws Exception {
+        String sql = "SELECT * FROM marca WHERE id_marca = ?";
+        try (java.sql.Connection con = Clases.ConexionBD.getConexion();
+             java.sql.PreparedStatement pst = con.prepareStatement(sql)) {
+            
+            pst.setInt(1, id);
+            java.sql.ResultSet rs = pst.executeQuery();
+            
+            if (rs.next()) {
+                return new Clases.Marca(
+                    rs.getInt("id_marca"),
+                    rs.getString("nombre")
+                );
+            }
+        }
+        return null;
+    }
 }

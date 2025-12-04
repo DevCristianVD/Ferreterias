@@ -88,5 +88,23 @@ public class CategoriaDAO {
         }
         return lista; 
     }
+    
+    public Clases.Categoria obtenerCategoriaPorId(int id) throws Exception {
+        String sql = "SELECT * FROM categoria WHERE id_categoria = ?";
+        try (java.sql.Connection con = Clases.ConexionBD.getConexion();
+             java.sql.PreparedStatement pst = con.prepareStatement(sql)) {
+            
+            pst.setInt(1, id);
+            java.sql.ResultSet rs = pst.executeQuery();
+            
+            if (rs.next()) {
+                return new Clases.Categoria(
+                    rs.getInt("id_categoria"),
+                    rs.getString("nombre")
+                );
+            }
+        }
+        return null;
+    }
 }
     

@@ -8,17 +8,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class ClienteDAO {
-    
+
     /**
-     * Verifica las credenciales del usuario en la base de datos.
-     * @param usuario El nombre de usuario.
-     * @param contrasena La contraseña del usuario.
-     * @return Un objeto Cliente si las credenciales son correctas, de lo contrario null.
+     * MODIFICADO: Ahora usa el constructor vacío y los setters.
+     * Es más robusto y no depende del orden de los parámetros.
      */
     public Cliente login(String usuario, String contrasena) {
-        // La consulta SQL para buscar al cliente por su usuario y contraseña
         String sql = "SELECT * FROM cliente WHERE usuario = ? AND contrasena = ?";
-        
+        Cliente cliente = null; // Inicia como nulo
+
         try (Connection con = ConexionBD.getConexion();
              PreparedStatement pst = con.prepareStatement(sql)) {
             
@@ -26,33 +24,30 @@ public class ClienteDAO {
             pst.setString(2, contrasena);
             
             try (ResultSet rs = pst.executeQuery()) {
-                // Si encuentra un resultado, crea y devuelve el objeto Cliente
                 if (rs.next()) {
-                    return new Cliente(
-                        rs.getInt("id_cliente"),
-                        rs.getString("usuario"),
-                        rs.getString("nombre"),
-                        rs.getString("primer_apellido"),
-                        rs.getString("segundo_apellido"),
-                        rs.getString("domicilio"),
-                        rs.getString("numero"),
-                        rs.getString("cp"),
-                        rs.getString("telefono"),
-                        rs.getString("correo"),
-                        rs.getString("contrasena"),
-                        rs.getString("rfc")
-                    );
+                    // --- ESTA ES LA FORMA CORRECTA ---
+                    cliente = new Cliente(); // Usa el constructor vacío
+                    cliente.setIdCliente(rs.getInt("id_cliente"));
+                    cliente.setUsuario(rs.getString("usuario"));
+                    cliente.setNombre(rs.getString("nombre"));
+                    cliente.setPrimerApellido(rs.getString("primer_apellido"));
+                    cliente.setSegundoApellido(rs.getString("segundo_apellido"));
+                    cliente.setDomicilio(rs.getString("domicilio"));
+                    cliente.setNumero(rs.getString("numero"));
+                    cliente.setCp(rs.getString("cp"));
+                    cliente.setTelefono(rs.getString("telefono"));
+                    cliente.setCorreo(rs.getString("correo"));
+                    cliente.setContrasena(rs.getString("contrasena"));
+                    // No hay 'rfc' en tu clase Cliente, así que no lo leemos.
                 }
             }
         } catch (SQLException e) {
-            // Es buena práctica imprimir el error para depuración
             System.err.println("Error en el login: " + e.getMessage());
         }
-        // Si no se encuentra el usuario o hay un error, devuelve null
-        return null;
+        return cliente; // Devuelve el cliente (o null)
     }
     
-     public int obtenerUltimoIdCliente() throws Exception {
+    public int obtenerUltimoIdCliente() throws Exception {
         String sql = "SELECT id_cliente FROM cliente ORDER BY id_cliente DESC LIMIT 1";
         try (Connection con = ConexionBD.getConexion();
              PreparedStatement pst = con.prepareStatement(sql);
@@ -65,8 +60,15 @@ public class ClienteDAO {
         return 0;
     }
 
+    /**
+     * MODIFICADO: Ahora inserta también el 'usuario'.
+     */
     public boolean insertarCliente(Cliente cliente) throws Exception {
-        String sql = "INSERT INTO cliente(id_cliente, nombre, primer_apellido, segundo_apellido, domicilio, numero, cp, telefono, correo, contrasena) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        // 1. Agregamos 'usuario' al SQL
+        String sql = "INSERT INTO cliente(id_cliente, nombre, primer_apellido, segundoApellido, " + 
+                     "domicilio, numero, cp, telefono, correo, contrasena, usuario) " + 
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // <-- 11 campos
+
         try (Connection con = ConexionBD.getConexion();
              PreparedStatement pst = con.prepareStatement(sql)) {
             
@@ -80,37 +82,81 @@ public class ClienteDAO {
             pst.setString(8, cliente.getTelefono());
             pst.setString(9, cliente.getCorreo());
             pst.setString(10, cliente.getContrasena());
+            
+            // 2. Agregamos el 'usuario' que faltaba
+            pst.setString(11, cliente.getUsuario());
 
             return pst.executeUpdate() > 0;
         }
     }
     
+    /**
+     * MODIFICADO: También usa el constructor vacío y setters.
+     */
     public Cliente obtenerClientePorId(int idCliente) throws Exception {
-    String sql = "SELECT * FROM cliente WHERE id_cliente = ?";
-    try (Connection con = ConexionBD.getConexion();
-         PreparedStatement pst = con.prepareStatement(sql)) {
+        String sql = "SELECT * FROM cliente WHERE id_cliente = ?";
+        try (Connection con = ConexionBD.getConexion();
+             PreparedStatement pst = con.prepareStatement(sql)) {
 
-        pst.setInt(1, idCliente);
-        ResultSet rs = pst.executeQuery();
+            pst.setInt(1, idCliente);
+            ResultSet rs = pst.executeQuery();
 
-        if (rs.next()) {
-            return new Cliente(
-                rs.getInt("id_cliente"),
-                rs.getString("nombre"),
-                rs.getString("primer_apellido"), // Asegúrate de que el nombre de la columna sea correcto en la base de datos
-                rs.getString("segundo_apellido"), // Asegúrate de que el nombre de la columna sea correcto en la base de datos
-                rs.getString("domicilio"),
-                rs.getString("numero"), // `numero` equivale a esta columna
-                rs.getString("cp"),
-                rs.getString("telefono"),
-                rs.getString("correo"),
-                rs.getString("contrasena") // Asegúrate de que esta columna exista en tu tabla
-            );
+            if (rs.next()) {
+                // Usamos el mismo método que en login()
+                Cliente cliente = new Cliente();
+                cliente.setIdCliente(rs.getInt("id_cliente"));
+                cliente.setUsuario(rs.getString("usuario")); // Asumiendo que quieres cargarlo
+                cliente.setNombre(rs.getString("nombre"));
+                cliente.setPrimerApellido(rs.getString("primer_apellido"));
+                cliente.setSegundoApellido(rs.getString("segundo_apellido"));
+                cliente.setDomicilio(rs.getString("domicilio"));
+                cliente.setNumero(rs.getString("numero"));
+                cliente.setCp(rs.getString("cp"));
+                cliente.setTelefono(rs.getString("telefono"));
+                cliente.setCorreo(rs.getString("correo"));
+                cliente.setContrasena(rs.getString("contrasena"));
+                return cliente;
+            }
+        }
+        return null; // Retorna null si no se encuentra el cliente
+    }
+    
+    public boolean actualizarCliente(Clases.Cliente c) throws Exception {
+        // Construimos el SQL dinámicamente o validamos la contraseña
+        String sql;
+        boolean actualizarPass = c.getContrasena() != null && !c.getContrasena().isEmpty();
+
+        if (actualizarPass) {
+            sql = "UPDATE cliente SET nombre=?, primer_apellido=?, segundo_apellido=?, " +
+                  "domicilio=?, numero=?, cp=?, telefono=?, correo=?, contrasena=? " +
+                  "WHERE id_cliente=?";
+        } else {
+            // Si no escribió contraseña nueva, no actualizamos ese campo
+            sql = "UPDATE cliente SET nombre=?, primer_apellido=?, segundo_apellido=?, " +
+                  "domicilio=?, numero=?, cp=?, telefono=?, correo=? " +
+                  "WHERE id_cliente=?";
+        }
+
+        try (java.sql.Connection con = Clases.ConexionBD.getConexion();
+             java.sql.PreparedStatement pst = con.prepareStatement(sql)) {
+
+            pst.setString(1, c.getNombre());
+            pst.setString(2, c.getPrimerApellido());
+            pst.setString(3, c.getSegundoApellido());
+            pst.setString(4, c.getDomicilio());
+            pst.setString(5, c.getNumero());
+            pst.setString(6, c.getCp());
+            pst.setString(7, c.getTelefono());
+            pst.setString(8, c.getCorreo());
+
+            if (actualizarPass) {
+                pst.setString(9, c.getContrasena());
+                pst.setInt(10, c.getIdCliente());
+            } else {
+                pst.setInt(9, c.getIdCliente());
+            }
+
+            return pst.executeUpdate() > 0;
         }
     }
-    return null; // Retorna null si no se encuentra el cliente
-}
-
-
-    
 }

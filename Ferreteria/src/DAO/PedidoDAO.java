@@ -79,5 +79,43 @@ public class PedidoDAO {
     return 0; // Si no hay registros, retorna 0
 }
 
+    // Método para EMPLEADOS (Ve todos los pedidos)
+    public List<Pedido> obtenerTodosLosPedidos() {
+        String sql = "SELECT * FROM pedidoencabezado";
+        return ejecutarConsulta(sql, -1);
+    }
+
+    // Método para CLIENTES (Ve solo sus propios pedidos)
+    public List<Pedido> obtenerPedidosPorCliente(int idCliente) {
+        String sql = "SELECT * FROM pedidoencabezado WHERE id_cliente = ?";
+        return ejecutarConsulta(sql, idCliente);
+    }
+
+    // Método auxiliar privado para no repetir código
+    private List<Pedido> ejecutarConsulta(String sql, int idCliente) {
+        List<Pedido> lista = new ArrayList<>();
+        try (Connection con = ConexionBD.getConexion();
+             PreparedStatement pst = con.prepareStatement(sql)) {
+            
+            if (idCliente != -1) {
+                pst.setInt(1, idCliente);
+            }
+
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    Pedido p = new Pedido();
+                    p.setIdPedido(rs.getInt("id_pedido"));
+                    p.setIdCliente(String.valueOf(rs.getInt("id_cliente")));
+                    // Asumiendo que tienes estos campos en tu clase Pedido y BD
+                    p.setTotal(rs.getDouble("total"));
+                    // p.setFecha(rs.getString("fecha")); // Si tienes fecha, agrégala
+                    lista.add(p);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
     
 }
